@@ -6,7 +6,7 @@ use App\Http\Controllers\Auth\RegisterController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
-    return view('welcome');
+    return view('auth.login');
 })->name('home');
 
 Route::middleware('guest')->group(function () {
@@ -31,17 +31,16 @@ Route::get('/dashboard', function () {
     };
 })->middleware('auth')->name('dashboard');
 
-// Note: Cette partie ne me concerne pas directement, mais je l'ai laissée pour montrer comment les routes pourraient être organisées en fonction des rôles.
-//Route::middleware(['auth', 'role:organisateur'])
-//    ->prefix('organisateur')
-//    ->name('organisateur.')
-//    ->group(function () {
-//        Route::get('/dashboard', fn () => view('organisateur.dashboard'))->name('dashboard');
-//    });
-//
-//Route::middleware(['auth', 'role:participant'])
-//    ->prefix('participant')
-//    ->name('participant.')
-//    ->group(function () {
-//        Route::get('/dashboard', fn () => view('participant.dashboard'))->name('dashboard');
-//    });
+Route::middleware(['auth', 'role:organisateur'])
+    ->prefix('organisateur')
+    ->name('organisateur.')
+    ->group(function () {
+        Route::get('/dashboard', fn() => view('organisateur.dashboard'))->name('dashboard');
+    });
+
+Route::middleware(['auth', 'role:participant'])
+    ->prefix('participant')
+    ->name('participant.')
+    ->group(function () {
+        Route::get('/dashboard', fn() => view('participant.dashboard'))->name('dashboard');
+    });
