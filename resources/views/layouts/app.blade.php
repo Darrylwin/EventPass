@@ -8,7 +8,7 @@
 </head>
 <body>
 <nav>
-    <a href="{{ route('home') }}">EventPass</a>
+    <a href="{{ route('home') }}">Event Pass</a>
 
     @auth
         <span>{{ auth()->user()->name }}</span>
