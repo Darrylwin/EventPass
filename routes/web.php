@@ -6,7 +6,9 @@ use App\Http\Controllers\Auth\RegisterController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
-    return view('auth.login');
+    // je redirige temporairement vers la page de login, mais on doit normalement afficher ici la page d'accueil.
+    // je passe cette main au dev chargé de faire la page d'accueil ainis que les différentes pages UI/UX
+    return redirect()->route('login');
 })->name('home');
 
 Route::middleware('guest')->group(function () {
