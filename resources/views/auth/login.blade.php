@@ -1,0 +1,34 @@
+@extends('layouts.app')
+
+@section('content')
+    <h1>Connexion</h1>
+
+    <form method="POST" action="{{ route('login') }}">
+        @csrf
+
+        <div>
+            <label for="email">Email</label>
+            <input type="email" id="email" name="email" value="{{ old('email') }}" required autofocus>
+            @error('email')
+            <span>{{ $message }}</span>
+            @enderror
+        </div>
+
+        <div>
+            <label for="password">Mot de passe</label>
+            <input type="password" id="password" name="password" required>
+            @error('password')
+            <span>{{ $message }}</span>
+            @enderror
+        </div>
+
+        <div>
+            <label>
+                <input type="checkbox" name="remember"> Se souvenir de moi
+            </label>
+        </div>
+
+        <button type="submit">Se connecter</button>
+        <a href="{{ route('register') }}">Pas encore de compte ?</a>
+    </form>
+@endsection
