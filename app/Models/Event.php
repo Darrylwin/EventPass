@@ -48,8 +48,7 @@ class Event extends Model
      */
     public function scopeUpcoming(Builder $query): Builder
     {
-        return $query->where('starts_at', '>', now())
-            ->where('status', 'publié');
+        return $query->where('starts_at', '>', now());
     }
 
     /**

@@ -67,5 +67,65 @@
                 </table>
             </div>
         </div>
+
+        <div class="bg-card border border-border rounded-xl overflow-hidden">
+            <div class="px-4 py-3 border-b border-border">
+                <h2 class="text-lg font-semibold">Inscriptions récentes (actions pass)</h2>
+            </div>
+
+            <div class="overflow-x-auto">
+                <table class="w-full text-sm">
+                    <thead class="bg-muted/60 text-muted-foreground uppercase tracking-wider text-xs">
+                    <tr>
+                        <th class="text-left px-4 py-3">Événement</th>
+                        <th class="text-left px-4 py-3">Participant</th>
+                        <th class="text-left px-4 py-3">Pass</th>
+                        <th class="text-left px-4 py-3">Statut</th>
+                        <th class="text-left px-4 py-3">Inscription</th>
+                        <th class="text-right px-4 py-3">Action</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    @forelse($registrations as $registration)
+                        <tr class="border-t border-border">
+                            <td class="px-4 py-3">{{ $registration->event->title }}</td>
+                            <td class="px-4 py-3">
+                                <p class="font-medium text-foreground">{{ $registration->user->name }}</p>
+                                <p class="text-xs text-muted-foreground">{{ $registration->user->email }}</p>
+                            </td>
+                            <td class="px-4 py-3 font-mono">{{ $registration->pass_code }}</td>
+                            <td class="px-4 py-3">
+                                <span class="inline-flex px-2.5 py-1 rounded-full text-xs {{ $registration->status === 'validé' ? 'bg-primary/15 text-primary' : 'bg-destructive/10 text-destructive' }}">
+                                    {{ ucfirst($registration->status) }}
+                                </span>
+                            </td>
+                            <td class="px-4 py-3">{{ $registration->registered_at->format('d/m/Y H:i') }}</td>
+                            <td class="px-4 py-3">
+                                <div class="flex justify-end">
+                                    @if($registration->status === 'validé')
+                                        <form method="POST" action="{{ route('organisateur.registrations.invalidate', $registration) }}">
+                                            @csrf
+                                            @method('PATCH')
+                                            <button type="submit" class="text-xs px-3 py-1.5 rounded-md border border-destructive/40 text-destructive hover:bg-destructive/10 transition">Invalider</button>
+                                        </form>
+                                    @else
+                                        <form method="POST" action="{{ route('organisateur.registrations.reactivate', $registration) }}">
+                                            @csrf
+                                            @method('PATCH')
+                                            <button type="submit" class="text-xs px-3 py-1.5 rounded-md border border-primary/40 text-primary hover:bg-primary/10 transition">Réactiver</button>
+                                        </form>
+                                    @endif
+                                </div>
+                            </td>
+                        </tr>
+                    @empty
+                        <tr>
+                            <td colspan="6" class="px-4 py-8 text-center text-muted-foreground">Aucune inscription pour le moment.</td>
+                        </tr>
+                    @endforelse
+                    </tbody>
+                </table>
+            </div>
+        </div>
     </div>
 @endsection

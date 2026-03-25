@@ -135,4 +135,38 @@ class EventManagementTest extends TestCase
         $response->assertSee('Future Published');
         $response->assertDontSee('Past Draft');
     }
+
+    public function test_upcoming_scope_is_based_on_date_only(): void
+    {
+        $organizer = User::factory()->create([
+            'role' => 'organisateur',
+        ]);
+
+        Event::create([
+            'organizer_id' => $organizer->id,
+            'title' => 'Future Draft',
+            'description' => 'Description',
+            'starts_at' => now()->addDays(3),
+            'location' => 'Lome',
+            'capacity' => 30,
+            'price' => 0,
+            'status' => 'brouillon',
+        ]);
+
+        Event::create([
+            'organizer_id' => $organizer->id,
+            'title' => 'Past Published',
+            'description' => 'Description',
+            'starts_at' => now()->subDays(2),
+            'location' => 'Lome',
+            'capacity' => 30,
+            'price' => 0,
+            'status' => 'publié',
+        ]);
+
+        $upcomingTitles = Event::query()->upcoming()->pluck('title')->all();
+
+        $this->assertContains('Future Draft', $upcomingTitles);
+        $this->assertNotContains('Past Published', $upcomingTitles);
+    }
 }

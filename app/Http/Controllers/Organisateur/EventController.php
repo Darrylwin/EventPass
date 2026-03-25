@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Organisateur;
 
 use App\Http\Controllers\Controller;
 use App\Models\Event;
+use App\Models\Registration;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -32,7 +33,14 @@ class EventController extends Controller
             ->take(5)
             ->get();
 
-        return view('organisateur.dashboard', compact('stats', 'events'));
+        $registrations = Registration::query()
+            ->whereHas('event', fn ($query) => $query->where('organizer_id', $user->id))
+            ->with(['user', 'event'])
+            ->latest('registered_at')
+            ->take(10)
+            ->get();
+
+        return view('organisateur.dashboard', compact('stats', 'events', 'registrations'));
     }
 
     public function index(Request $request): View
