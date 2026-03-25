@@ -1,8 +1,11 @@
 <?php
 
+use App\Http\Controllers\Organisateur\EventController;
+use App\Http\Controllers\Organisateur\RegistrationController;
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\Auth\LogoutController;
 use App\Http\Controllers\Auth\RegisterController;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
@@ -24,7 +27,11 @@ Route::post('/logout', [LogoutController::class, 'logout'])
     ->name('logout');
 
 Route::get('/dashboard', function () {
-    $role = auth()->user()->role;
+    $role = Auth::user()?->role;
+
+    if (!$role) {
+        return redirect()->route('login');
+    }
 
     return match ($role) {
         'admin' => redirect('/admin'),
@@ -37,7 +44,13 @@ Route::middleware(['auth', 'role:organisateur'])
     ->prefix('organisateur')
     ->name('organisateur.')
     ->group(function () {
-        Route::get('/dashboard', fn() => view('organisateur.dashboard'))->name('dashboard');
+        Route::get('/dashboard', [EventController::class, 'dashboard'])->name('dashboard');
+        Route::resource('events', EventController::class);
+
+        Route::patch('/registrations/{registration}/invalidate', [RegistrationController::class, 'invalidate'])
+            ->name('registrations.invalidate');
+        Route::patch('/registrations/{registration}/reactivate', [RegistrationController::class, 'reactivate'])
+            ->name('registrations.reactivate');
     });
 
 Route::middleware(['auth', 'role:participant'])

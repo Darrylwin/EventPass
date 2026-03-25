@@ -48,8 +48,7 @@ class Event extends Model
      */
     public function scopeUpcoming(Builder $query): Builder
     {
-        return $query->where('starts_at', '>', now())
-            ->where('status', 'publié');
+        return $query->where('starts_at', '>', now());
     }
 
     /**
@@ -65,10 +64,9 @@ class Event extends Model
      */
     public function scopeFull(Builder $query): Builder
     {
-        return $query->whereColumn('capacity', '<=',
-            Registration::selectRaw('count(*)')
-                ->whereColumn('event_id', 'events.id')
-                ->where('status', 'validé')
+        return $query->whereRaw(
+            "capacity <= (select count(*) from registrations where registrations.event_id = events.id and registrations.status = ?)",
+            ['validé']
         );
     }
 
