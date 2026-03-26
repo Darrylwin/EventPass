@@ -9,27 +9,42 @@
 
     <div class="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
         @forelse ($events as $event)
-            <div class="bg-card border border-border rounded-2xl overflow-hidden flex flex-col shadow-sm hover:shadow-md transition-shadow">
-                @if($event->image_path)
-                    <img src="{{ \Illuminate\Support\Facades\Storage::url($event->image_path) }}" 
-                         class="w-full h-48 object-cover" alt="{{ $event->title }}">
-                @else
-                    <div class="w-full h-48 bg-muted flex items-center justify-center">
-                        <span class="text-muted-foreground">Pas d'image</span>
-                    </div>
-                @endif
+            @php $isPast = $event->starts_at->isPast(); @endphp
+            <a href="{{ route('events.show', $event) }}" class="block bg-card border border-border rounded-2xl overflow-hidden shadow-sm hover:shadow-md transition-all {{ $isPast ? 'opacity-75 grayscale-[0.6] hover:grayscale-0' : 'hover:-translate-y-1' }}">
+                <div class="relative">
+                    @if($event->image_path)
+                        <img src="{{ \Illuminate\Support\Facades\Storage::url($event->image_path) }}" 
+                             class="w-full h-48 object-cover" alt="{{ $event->title }}">
+                    @else
+                        <div class="w-full h-48 bg-muted flex items-center justify-center">
+                            <span class="text-muted-foreground">Pas d'image</span>
+                        </div>
+                    @endif
+                    
+                    @if($isPast)
+                        <div class="absolute top-3 right-3 bg-foreground/80 text-background px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider backdrop-blur-sm">
+                            Terminé
+                        </div>
+                    @elseif($event->isFull())
+                        <div class="absolute top-3 right-3 bg-destructive text-destructive-foreground px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider shadow-sm">
+                            Complet
+                        </div>
+                    @endif
+                </div>
                 
-                <div class="p-6 flex-1 flex flex-col">
+                <div class="p-6 flex flex-col h-[calc(100%-12rem)]">
                     <div class="flex items-center justify-between mb-2">
                         <span class="text-xs font-bold uppercase tracking-wider text-primary bg-primary/10 px-2 py-1 rounded">
                             {{ $event->isFree() ? 'Gratuit' : number_format($event->price, 0, ',', ' ') . ' FCFA' }}
                         </span>
-                        <span class="text-xs text-muted-foreground italic">
-                            {{ $event->availableSpots() }} places restantes
-                        </span>
+                        @if(!$isPast)
+                            <span class="text-xs font-medium {{ $event->availableSpots() <= 2 ? 'text-destructive animate-pulse font-bold' : 'text-muted-foreground' }}">
+                                {{ $event->availableSpots() }} places restantes
+                            </span>
+                        @endif
                     </div>
                     
-                    <h2 class="text-xl font-bold mb-2 line-clamp-1">{{ $event->title }}</h2>
+                    <h2 class="text-xl font-bold mb-2 line-clamp-1 group-hover:text-primary transition-colors">{{ $event->title }}</h2>
                     <p class="text-sm text-muted-foreground line-clamp-3 mb-4 flex-1">
                         {{ $event->description }}
                     </p>
@@ -44,31 +59,20 @@
                             {{ $event->location }}
                         </div>
                         
-                        @auth
-                            @if(auth()->user()->registrations->contains('event_id', $event->id))
-                                <button disabled class="w-full bg-muted text-muted-foreground py-2.5 rounded-xl font-medium cursor-not-allowed">
-                                    Déjà inscrit
-                                </button>
-                            @elseif($event->isFull())
-                                <button disabled class="w-full bg-destructive/10 text-destructive py-2.5 rounded-xl font-medium cursor-not-allowed">
-                                    Complet
-                                </button>
+                        <div class="pt-2">
+                            @if($isPast)
+                                <div class="w-full text-center bg-muted text-muted-foreground py-2.5 rounded-xl font-medium">
+                                    Événement passé
+                                </div>
                             @else
-                                <form action="{{ route('participant.events.register', $event) }}" method="POST">
-                                    @csrf
-                                    <button type="submit" class="w-full bg-primary text-primary-foreground py-2.5 rounded-xl font-medium hover:opacity-90 active:scale-[0.98] transition-all">
-                                        S'inscrire maintenant
-                                    </button>
-                                </form>
+                                <div class="w-full text-center bg-primary/10 text-primary group-hover:bg-primary group-hover:text-primary-foreground py-2.5 rounded-xl font-medium transition-all">
+                                    Voir les détails
+                                </div>
                             @endif
-                        @else
-                            <a href="{{ route('login') }}" class="block text-center w-full bg-primary text-primary-foreground py-2.5 rounded-xl font-medium hover:opacity-90 transition-all">
-                                Se connecter pour s'inscrire
-                            </a>
-                        @endauth
+                        </div>
                     </div>
                 </div>
-            </div>
+            </a>
         @empty
             <div class="col-span-full py-20 text-center">
                 <p class="text-muted-foreground text-lg">Aucun événement n'est disponible pour le moment.</p>
