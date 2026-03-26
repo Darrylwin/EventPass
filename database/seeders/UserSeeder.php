@@ -10,25 +10,31 @@ class UserSeeder extends Seeder
 {
     public function run(): void
     {
-        User::create([
-            'name' => 'Administrateur',
-            'email' => 'admin@eventpass.com',
-            'password' => Hash::make('password'),
-            'role' => 'admin',
-        ]);
+        User::updateOrCreate(
+            ['email' => 'admin@eventpass.com'],
+            [
+                'name' => 'Administrateur',
+                'password' => Hash::make('password'),
+                'role' => 'admin',
+            ]
+        );
 
-        User::create([
-            'name' => 'Organisateur Test',
-            'email' => 'orga@eventpass.com',
-            'password' => Hash::make('password'),
-            'role' => 'organisateur',
-        ]);
+        User::updateOrCreate(
+            ['email' => 'orga@eventpass.com'],
+            [
+                'name' => 'Organisateur Test',
+                'password' => Hash::make('password'),
+                'role' => 'organisateur',
+            ]
+        );
 
-        User::create([
-            'name' => 'Participant Test',
-            'email' => 'participant@eventpass.com',
-            'password' => Hash::make('password'),
-            'role' => 'participant',
-        ]);
+        User::updateOrCreate(
+            ['email' => 'participant@eventpass.com'],
+            [
+                'name' => 'Participant Test',
+                'password' => Hash::make('password'),
+                'role' => 'participant',
+            ]
+        );
     }
 }
