@@ -18,8 +18,22 @@ class RegistrationController extends Controller
      */
     public function publicIndex(): View
     {
-        $events = Event::upcoming()->where('status', 'publié')->latest('starts_at')->get();
+        $events = Event::where('status', 'publié')
+            ->orderBy('starts_at', 'desc')
+            ->get();
+            
         return view('participant.events_list', compact('events'));
+    }
+
+    /**
+     * Affiche les détails d'un événement (KOKODOKO temporary).
+     */
+    public function publicShow(Event $event): View
+    {
+        // On s'assure que l'événement est bien publié
+        abort_if($event->status !== 'publié', 404);
+        
+        return view('participant.event_show', compact('event'));
     }
 
     /**
