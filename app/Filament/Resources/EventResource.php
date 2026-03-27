@@ -5,6 +5,7 @@ namespace App\Filament\Resources;
 use App\Filament\Resources\EventResource\Pages;
 use App\Models\Event;
 use Filament\Forms\Components\DateTimePicker;
+use Filament\Forms\Components\FileUpload;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
@@ -13,6 +14,7 @@ use Filament\Resources\Resource;
 use Filament\Tables\Actions\Action;
 use Filament\Tables\Actions\DeleteBulkAction;
 use Filament\Tables\Columns\BadgeColumn;
+use Filament\Tables\Columns\ImageColumn;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
@@ -62,11 +64,24 @@ class EventResource extends Resource
                 ->label('Statut')
                 ->options([
                     'brouillon' => 'Brouillon',
-                    'publié'    => 'Publié',
-                    'annulé'    => 'Annulé',
-                    'terminé'   => 'Terminé',
+                    'publié' => 'Publié',
+                    'annulé' => 'Annulé',
+                    'terminé' => 'Terminé',
                 ])
                 ->required(),
+
+            FileUpload::make('image_path')
+                ->label('Image')
+                ->image()
+                ->disk('public')
+                ->directory('events')
+                ->imageResizeMode('cover')
+                ->imageCropAspectRatio('16:9')
+                ->imageResizeTargetWidth('1280')
+                ->imageResizeTargetHeight('720')
+                ->maxSize(2048)
+                ->nullable()
+                ->columnSpanFull(),
         ]);
     }
 
@@ -74,6 +89,13 @@ class EventResource extends Resource
     {
         return $table
             ->columns([
+                ImageColumn::make('image_path')
+                    ->label('Image')
+                    ->disk('public')
+                    ->height(48)
+                    ->width(80)
+                    ->defaultImageUrl(null),
+
                 TextColumn::make('title')
                     ->label('Titre')
                     ->searchable()
@@ -99,9 +121,9 @@ class EventResource extends Resource
                     ->label('Statut')
                     ->colors([
                         'secondary' => 'brouillon',
-                        'success'   => 'publié',
-                        'danger'    => 'annulé',
-                        'warning'   => 'terminé',
+                        'success' => 'publié',
+                        'danger' => 'annulé',
+                        'warning' => 'terminé',
                     ]),
             ])
             ->filters([
@@ -109,9 +131,9 @@ class EventResource extends Resource
                     ->label('Statut')
                     ->options([
                         'brouillon' => 'Brouillon',
-                        'publié'    => 'Publié',
-                        'annulé'    => 'Annulé',
-                        'terminé'   => 'Terminé',
+                        'publié' => 'Publié',
+                        'annulé' => 'Annulé',
+                        'terminé' => 'Terminé',
                     ]),
             ])
             ->actions([
@@ -119,16 +141,16 @@ class EventResource extends Resource
                     ->label('Publier')
                     ->icon('heroicon-o-check-circle')
                     ->color('success')
-                    ->visible(fn (Event $record) => $record->status === 'brouillon')
-                    ->action(fn (Event $record) => $record->update(['status' => 'publié'])),
+                    ->visible(fn(Event $record) => $record->status === 'brouillon')
+                    ->action(fn(Event $record) => $record->update(['status' => 'publié'])),
 
                 Action::make('annuler')
                     ->label('Annuler')
                     ->icon('heroicon-o-x-circle')
                     ->color('danger')
-                    ->visible(fn (Event $record) => $record->status === 'publié')
+                    ->visible(fn(Event $record) => $record->status === 'publié')
                     ->requiresConfirmation()
-                    ->action(fn (Event $record) => $record->update(['status' => 'annulé'])),
+                    ->action(fn(Event $record) => $record->update(['status' => 'annulé'])),
             ])
             ->bulkActions([
                 DeleteBulkAction::make(),
@@ -143,9 +165,9 @@ class EventResource extends Resource
     public static function getPages(): array
     {
         return [
-            'index'  => Pages\ListEvents::route('/'),
+            'index' => Pages\ListEvents::route('/'),
             'create' => Pages\CreateEvent::route('/create'),
-            'edit'   => Pages\EditEvent::route('/{record}/edit'),
+            'edit' => Pages\EditEvent::route('/{record}/edit'),
         ];
     }
 }
