@@ -32,13 +32,7 @@ Route::post('/logout', [LogoutController::class, 'logout'])
     ->name('logout');
 
 Route::get('/dashboard', function () {
-    $role = Auth::user()?->role;
-
-    if (!$role) {
-        return redirect()->route('login');
-    }
-
-    return match ($role) {
+    return match (Auth::user()->role) {
         'admin' => redirect('/admin'),
         'organisateur' => redirect()->route('organisateur.dashboard'),
         default => redirect()->route('participant.dashboard'),
