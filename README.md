@@ -71,21 +71,21 @@ L'application est accessible sur `http://localhost:8000`.
 
 ## Comptes de test
 
-| Rôle | Email | Mot de passe |
-|---|---|---|
-| Administrateur | admin@eventpass.com | password |
-| Organisateur | orga@eventpass.com | password |
-| Participant | participant@eventpass.com | password |
+| Rôle          | Email                     | Mot de passe |
+| -------------- | ------------------------- | ------------ |
+| Administrateur | admin@eventpass.com       | password     |
+| Organisateur   | orga@eventpass.com        | password     |
+| Participant    | participant@eventpass.com | password     |
 
 ---
 
 ## Accès par rôle
 
-| Rôle | URL |
-|---|---|
-| Admin | `/admin` (Filament) |
+| Rôle        | URL                         |
+| ------------ | --------------------------- |
+| Admin        | `/admin` (Filament)       |
 | Organisateur | `/organisateur/dashboard` |
-| Participant | `/participant/dashboard` |
+| Participant  | `/participant/dashboard`  |
 
 La route `/dashboard` redirige automatiquement selon le rôle de l'utilisateur connecté.
 
@@ -126,53 +126,59 @@ database/
 ## Modèle de données
 
 ### users
-| Colonne | Type | Description |
-|---|---|---|
-| id | bigint | Clé primaire |
-| name | string | Nom de l'utilisateur |
-| email | string | Email unique |
-| password | string | Mot de passe hashé |
-| role | enum | `admin`, `organisateur`, `participant` |
+
+| Colonne  | Type   | Description                                  |
+| -------- | ------ | -------------------------------------------- |
+| id       | bigint | Clé primaire                                |
+| name     | string | Nom de l'utilisateur                         |
+| email    | string | Email unique                                 |
+| password | string | Mot de passe hashé                          |
+| role     | enum   | `admin`, `organisateur`, `participant` |
 
 ### events
-| Colonne | Type | Description |
-|---|---|---|
-| id | bigint | Clé primaire |
-| organizer_id | foreignId | Référence vers users |
-| title | string | Titre de l'événement |
-| description | text | Description |
-| starts_at | datetime | Date et heure de début |
-| location | string | Lieu |
-| capacity | integer | Nombre de places |
-| price | decimal | Tarif (0 = gratuit) |
-| image_path | string | Chemin de l'image |
-| status | enum | `brouillon`, `publié`, `annulé`, `terminé` |
+
+| Colonne      | Type      | Description                                           |
+| ------------ | --------- | ----------------------------------------------------- |
+| id           | bigint    | Clé primaire                                         |
+| organizer_id | foreignId | Référence vers users                                |
+| title        | string    | Titre de l'événement                                |
+| description  | text      | Description                                           |
+| starts_at    | datetime  | Date et heure de début                               |
+| location     | string    | Lieu                                                  |
+| capacity     | integer   | Nombre de places                                      |
+| price        | decimal   | Tarif (0 = gratuit)                                   |
+| image_path   | string    | Chemin de l'image                                     |
+| status       | enum      | `brouillon`, `publié`, `annulé`, `terminé` |
 
 ### registrations
-| Colonne | Type | Description |
-|---|---|---|
-| id | bigint | Clé primaire |
-| event_id | foreignId | Référence vers events |
-| user_id | foreignId | Référence vers users |
-| pass_code | string | Code unique du pass (8 caractères) |
-| status | enum | `validé`, `annulé` |
-| registered_at | timestamp | Date d'inscription |
+
+| Colonne       | Type      | Description                         |
+| ------------- | --------- | ----------------------------------- |
+| id            | bigint    | Clé primaire                       |
+| event_id      | foreignId | Référence vers events             |
+| user_id       | foreignId | Référence vers users              |
+| pass_code     | string    | Code unique du pass (8 caractères) |
+| status        | enum      | `validé`, `annulé`            |
+| registered_at | timestamp | Date d'inscription                  |
 
 ---
 
 ## Rôles et permissions
 
 **Administrateur** - accès via Filament (`/admin`) :
+
 - Modérer les événements (publier, annuler)
 - Gérer les utilisateurs
 - Consulter les statistiques globales
 
 **Organisateur** - accès via `/organisateur` :
+
 - Créer et gérer ses événements
 - Consulter la liste des inscrits
 - Invalider ou réactiver un pass
 
 **Participant** - accès via `/participant` :
+
 - Parcourir les événements à venir
 - S'inscrire à un événement
 - Récupérer et consulter son pass numérique
@@ -181,9 +187,9 @@ database/
 
 ## Équipe
 
-| Membre   | Responsabilité |
-|----------|---|
-| LOGOSSOU | Auth, administration, panel Filament |
+| Membre   | Responsabilité                         |
+| -------- | --------------------------------------- |
+| LOGOSSOU | Auth, administration, panel Filament    |
 | BOGUE    | Gestion des événements (organisateur) |
-| KOKODOKO | Inscriptions et pass (participant) |
-| OSSEYI   | Interface publique et UX |
+| KOKODOKO | Inscriptions et pass (participant)      |
+| OSSEYI   | Interface publique et UX                |
