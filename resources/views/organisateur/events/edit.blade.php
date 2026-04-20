@@ -43,17 +43,18 @@
                             Annuler
                         </a>
                     </div>
-
-                    <form method="POST" action="{{ route('organisateur.events.destroy', $event) }}"
-                          onsubmit="return confirm('Supprimer définitivement cet événement ?')">
-                        @csrf
-                        @method('DELETE')
-                        <button type="submit"
-                                class="text-xs px-3 py-2 rounded-md border border-destructive/40 text-destructive hover:bg-destructive/10 transition-colors">
-                            Supprimer
-                        </button>
-                    </form>
+                    <!-- Delete form moved outside the update form to avoid nested forms -->
                 </div>
+            </form>
+
+            <form method="POST" action="{{ route('organisateur.events.destroy', $event) }}"
+                  onsubmit="return confirm('Supprimer définitivement cet événement ?')" class="mt-3">
+                @csrf
+                @method('DELETE')
+                <button type="submit"
+                        class="text-xs px-3 py-2 rounded-md border border-destructive/40 text-destructive hover:bg-destructive/10 transition-colors">
+                    Supprimer
+                </button>
             </form>
         </div>
 

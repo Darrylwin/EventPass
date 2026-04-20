@@ -2,6 +2,15 @@
 
 namespace App\Models;
 
+/**
+ * @property int $id
+ * @property int $event_id
+ * @property int $user_id
+ * @property string $pass_code
+ * @property string $status
+ * @property \Illuminate\Support\Carbon $registered_at
+ */
+
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -18,12 +27,9 @@ class Registration extends Model
         'registered_at',
     ];
 
-    protected function casts(): array
-    {
-        return [
-            'registered_at' => 'datetime',
-        ];
-    }
+    protected $casts = [
+        'registered_at' => 'datetime',
+    ];
 
     public function event(): BelongsTo
     {

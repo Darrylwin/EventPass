@@ -11,7 +11,7 @@ use Filament\Resources\Resource;
 use Filament\Tables\Actions\DeleteAction;
 use Filament\Tables\Actions\DeleteBulkAction;
 use Filament\Tables\Actions\EditAction;
-use Filament\Tables\Columns\BadgeColumn;
+// BadgeColumn is deprecated; use TextColumn->badge()
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
@@ -73,8 +73,9 @@ class UserResource extends Resource
                     ->searchable()
                     ->sortable(),
 
-                BadgeColumn::make('role')
+                TextColumn::make('role')
                     ->label('Rôle')
+                    ->badge()
                     ->colors([
                         'danger' => 'admin',
                         'warning' => 'organisateur',
