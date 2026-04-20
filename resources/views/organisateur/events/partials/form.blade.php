@@ -19,16 +19,41 @@
 
 <div class="grid sm:grid-cols-2 gap-4">
     <div>
-        <label for="starts_at" class="block text-xs font-medium text-muted-foreground uppercase tracking-widest mb-2">Date
+        <label for="starts_date" class="block text-xs font-medium text-muted-foreground uppercase tracking-widest mb-2">Date
             et heure</label>
+
+        {{-- Sélecteur enrichi (Flatpickr) + champs fallback date/time --}}
         <input
-            type="datetime-local"
-            name="starts_at"
-            id="starts_at"
-            value="{{ old('starts_at', $event->starts_at ? $event->starts_at->format('Y-m-d\\TH:i') : '') }}"
-            required
-            class="w-full bg-input/30 border border-border rounded-lg px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
+            type="text"
+            id="starts_at_picker"
+            name="starts_at_picker"
+            value="{{ old('starts_at', $event->starts_at ? $event->starts_at->format('d/m/Y H:i') : '') }}"
+            placeholder="Sélectionnez la date et l'heure"
+            class="w-full mb-2 bg-input/30 border border-border rounded-lg px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
         >
+
+        <div class="flex gap-2">
+            <input
+                type="date"
+                name="starts_date"
+                id="starts_date"
+                value="{{ old('starts_date', $event->starts_at ? $event->starts_at->format('Y-m-d') : '') }}"
+                required
+                class="w-1/2 bg-input/30 border border-border rounded-lg px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
+            >
+
+            <input
+                type="time"
+                name="starts_time"
+                id="starts_time"
+                value="{{ old('starts_time', $event->starts_at ? $event->starts_at->format('H:i') : '') }}"
+                required
+                class="w-1/2 bg-input/30 border border-border rounded-lg px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
+            >
+        </div>
+
+        {{-- Valeur finale envoyée au serveur (synchronisée par JS) --}}
+        <input type="hidden" name="starts_at" id="starts_at" value="{{ old('starts_at', $event->starts_at ? $event->starts_at->format('Y-m-d\\TH:i') : '') }}">
     </div>
 
     <div>
@@ -167,3 +192,117 @@
         };
     }
 </script>
+
+    <script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const dateEl = document.getElementById('starts_date');
+        const timeEl = document.getElementById('starts_time');
+        const hiddenEl = document.getElementById('starts_at');
+        const pickerEl = document.getElementById('starts_at_picker');
+
+        function syncStartsAt() {
+            if (!dateEl || !hiddenEl) return;
+            const date = dateEl.value;
+            const time = timeEl ? timeEl.value : '';
+
+            if (!date) {
+                hiddenEl.value = '';
+                return;
+            }
+
+            // Format attendu pour input datetime-local / validation côté serveur
+            hiddenEl.value = time ? `${date}T${time}` : date;
+
+            // Keep picker display in sync for clarity
+            if (pickerEl && typeof flatpickr === 'undefined') {
+                // If flatpickr not available, just set the text value
+                pickerEl.value = time ? `${date.split('-').reverse().join('/')} ${time}` : date.split('-').reverse().join('/');
+            }
+        }
+
+        if (dateEl) dateEl.addEventListener('change', syncStartsAt);
+        if (timeEl) timeEl.addEventListener('change', syncStartsAt);
+
+        const form = dateEl ? dateEl.closest('form') : null;
+        if (form) form.addEventListener('submit', syncStartsAt);
+
+        // Initial sync (pré-remplissage si edition)
+        syncStartsAt();
+
+        // Load Flatpickr if available and initialize
+        function initFlatpickr() {
+            if (typeof flatpickr === 'undefined' || !pickerEl) return;
+
+            // French locale if available
+            const frLocale = (flatpickr && flatpickr.l10ns && flatpickr.l10ns.fr) ? flatpickr.l10ns.fr : null;
+
+            flatpickr(pickerEl, {
+                enableTime: true,
+                dateFormat: "Y-m-d\TH:i",
+                altInput: true,
+                altFormat: "d/m/Y H:i",
+                time_24hr: true,
+                minuteIncrement: 5,
+                locale: frLocale || undefined,
+                defaultDate: hiddenEl && hiddenEl.value ? hiddenEl.value : null,
+                onChange: function (selectedDates, dateStr) {
+                    if (!hiddenEl) return;
+                    hiddenEl.value = dateStr;
+
+                    if (selectedDates.length) {
+                        const dt = selectedDates[0];
+                        const y = dt.getFullYear();
+                        const m = String(dt.getMonth() + 1).padStart(2, '0');
+                        const d = String(dt.getDate()).padStart(2, '0');
+                        const hh = String(dt.getHours()).padStart(2, '0');
+                        const mm = String(dt.getMinutes()).padStart(2, '0');
+
+                        if (dateEl) dateEl.value = `${y}-${m}-${d}`;
+                        if (timeEl) timeEl.value = `${hh}:${mm}`;
+                    }
+                },
+            });
+        }
+
+        // If flatpickr already loaded
+        if (typeof flatpickr !== 'undefined') {
+            initFlatpickr();
+        } else {
+            // Try to load flatpickr from CDN dynamically
+            const cssHref = 'https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css';
+            const jsSrc = 'https://cdn.jsdelivr.net/npm/flatpickr';
+            const frSrc = 'https://cdn.jsdelivr.net/npm/flatpickr/dist/l10n/fr.js';
+
+            // Insert CSS
+            if (!document.querySelector(`link[href="${cssHref}"]`)) {
+                const link = document.createElement('link');
+                link.rel = 'stylesheet';
+                link.href = cssHref;
+                document.head.appendChild(link);
+            }
+
+            // Insert main script
+            if (!document.querySelector(`script[src="${jsSrc}"]`)) {
+                const s = document.createElement('script');
+                s.src = jsSrc;
+                s.onload = function () {
+                    // load french locale then init
+                    const sf = document.createElement('script');
+                    sf.src = frSrc;
+                    sf.onload = initFlatpickr;
+                    document.head.appendChild(sf);
+                };
+                document.head.appendChild(s);
+            } else {
+                // already present but not loaded yet
+                const existing = document.querySelector(`script[src="${jsSrc}"]`);
+                existing.addEventListener('load', function () {
+                    const sf = document.createElement('script');
+                    sf.src = frSrc;
+                    sf.onload = initFlatpickr;
+                    document.head.appendChild(sf);
+                });
+            }
+        }
+    });
+    </script>

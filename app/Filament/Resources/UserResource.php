@@ -44,9 +44,9 @@ class UserResource extends Resource
             TextInput::make('password')
                 ->label('Mot de passe')
                 ->password()
-                ->dehydrateStateUsing(fn($state) => bcrypt($state))
-                ->dehydrated(fn($state) => filled($state))
-                ->required(fn(string $operation) => $operation === 'create'),
+                ->dehydrateStateUsing(fn ($state) => bcrypt($state))
+                ->dehydrated(fn ($state) => filled($state))
+                ->required(fn (string $operation) => $operation === 'create'),
 
             Select::make('role')
                 ->label('Rôle')

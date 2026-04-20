@@ -29,7 +29,8 @@ class EventController extends Controller
             ->withCount([
                 'registrations as validated_registrations_count' => fn ($query) => $query->where('status', 'validé'),
             ])
-            ->latest('starts_at')
+            ->upcoming()
+            ->orderBy('starts_at', 'asc')
             ->take(5)
             ->get();
 
@@ -67,7 +68,7 @@ class EventController extends Controller
 
     public function create(): View
     {
-        $event = new Event();
+        $event = new Event;
 
         return view('organisateur.events.create', compact('event'));
     }

@@ -4,6 +4,7 @@ namespace App\Filament\Resources;
 
 use App\Filament\Resources\EventResource\Pages;
 use App\Models\Event;
+use App\Models\User;
 use Filament\Forms\Components\DateTimePicker;
 use Filament\Forms\Components\FileUpload;
 use Filament\Forms\Components\Select;
@@ -37,13 +38,29 @@ class EventResource extends Resource
                 ->required()
                 ->maxLength(255),
 
+            Select::make('organizer_id')
+                ->label('Organisateur')
+                ->options(fn () => User::where('role', 'organisateur')->pluck('name', 'id'))
+                ->preload()
+                ->searchable()
+                ->default(fn () => auth()->id())
+                ->hidden(fn () => ! auth()->user() || ! auth()->user()->isAdmin()),
+
             Textarea::make('description')
                 ->label('Description')
                 ->required(),
 
             DateTimePicker::make('starts_at')
                 ->label('Date de début')
-                ->required(),
+                ->required()
+                ->displayFormat('d/m/Y H:i')
+                ->format('Y-m-d H:i')
+                ->minutesStep(5)
+                ->seconds(false)
+                ->firstDayOfWeek(1)
+                ->time(true)
+                ->closeOnDateSelection(false)
+                ->locale('fr'),
 
             TextInput::make('location')
                 ->label('Lieu')
@@ -141,16 +158,16 @@ class EventResource extends Resource
                     ->label('Publier')
                     ->icon('heroicon-o-check-circle')
                     ->color('success')
-                    ->visible(fn(Event $record) => $record->status === 'brouillon')
-                    ->action(fn(Event $record) => $record->update(['status' => 'publié'])),
+                    ->visible(fn (Event $record) => $record->status === 'brouillon')
+                    ->action(fn (Event $record) => $record->update(['status' => 'publié'])),
 
                 Action::make('annuler')
                     ->label('Annuler')
                     ->icon('heroicon-o-x-circle')
                     ->color('danger')
-                    ->visible(fn(Event $record) => $record->status === 'publié')
+                    ->visible(fn (Event $record) => $record->status === 'publié')
                     ->requiresConfirmation()
-                    ->action(fn(Event $record) => $record->update(['status' => 'annulé'])),
+                    ->action(fn (Event $record) => $record->update(['status' => 'annulé'])),
             ])
             ->bulkActions([
                 DeleteBulkAction::make(),

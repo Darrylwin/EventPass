@@ -10,6 +10,16 @@
               ? 'opacity-60 grayscale hover:opacity-90 hover:grayscale-0'
               : 'hover:-translate-y-0.5 hover:shadow-md' }}">
 
+    {{-- moved calculation to top of template to avoid undefined variable errors --}}
+    @php
+        // Eviter un count() par événement quand withCount('validated_registrations_count') est disponible
+        $validated = $event->validated_registrations_count ?? null;
+        if ($validated === null) {
+            $validated = $event->registrations()->where('status', 'validé')->count();
+        }
+        $availableSpots = max(0, $event->capacity - $validated);
+    @endphp
+
     {{-- Image + badges --}}
     <div class="relative aspect-video overflow-hidden bg-muted">
         @if($event->image_path)
@@ -49,17 +59,32 @@
                     Complet
                 </span>
             </div>
-        @elseif($event->availableSpots() <= 5 && $event->availableSpots() > 0)
+        @elseif($availableSpots <= 2 && $availableSpots > 0)
             <div class="absolute top-3 right-3">
                 <span
-                    class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-bold bg-amber-500/90 text-white backdrop-blur-sm animate-pulse">
-                    {{ $event->availableSpots() }} restante{{ $event->availableSpots() > 1 ? 's' : '' }}
+                    class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-bold bg-destructive text-destructive-foreground shadow-sm animate-pulse">
+                    Dernières places — {{ $availableSpots }} restante{{ $availableSpots > 1 ? 's' : '' }}
+                </span>
+            </div>
+        @elseif($availableSpots <= 5 && $availableSpots > 0)
+            <div class="absolute top-3 right-3">
+                <span
+                    class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-bold bg-amber-500/90 text-white backdrop-blur-sm">
+                    {{ $availableSpots }} restante{{ $availableSpots > 1 ? 's' : '' }}
                 </span>
             </div>
         @endif
     </div>
 
     {{-- Contenu --}}
+    @php
+        // Eviter un count() par événement quand withCount('validated_registrations_count') est disponible
+        $validated = $event->validated_registrations_count ?? null;
+        if ($validated === null) {
+            $validated = $event->registrations()->where('status', 'validé')->count();
+        }
+        $availableSpots = max(0, $event->capacity - $validated);
+    @endphp
     <div class="flex flex-col flex-1 p-5">
         <h2 class="font-semibold text-base line-clamp-1 group-hover:text-primary transition-colors">
             {{ $event->title }}
@@ -90,7 +115,7 @@
 
         {{-- CTA --}}
         <div class="mt-4">
-            @if($isPast)
+                @if($isPast)
                 <div class="w-full text-center py-2 rounded-xl text-xs font-medium text-muted-foreground bg-muted">
                     Événement terminé
                 </div>

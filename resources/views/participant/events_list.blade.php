@@ -12,8 +12,9 @@
         </div>
 
         @php
-            $upcomingEvents = $events->filter(fn($e) => !$e->starts_at->isPast());
-            $pastEvents = $events->filter(fn($e) => $e->starts_at->isPast());
+            // Les collections sont pré-calculées côté contrôleur lorsque la pagination est activée
+            $upcomingEvents = $upcomingEvents ?? collect();
+            $pastEvents = $pastEvents ?? collect();
         @endphp
 
         {{-- Événements à venir --}}
