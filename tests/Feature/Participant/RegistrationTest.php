@@ -3,8 +3,8 @@
 namespace Tests\Feature\Participant;
 
 use App\Models\Event;
-use App\Models\User;
 use App\Models\Registration;
+use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
@@ -15,7 +15,7 @@ class RegistrationTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
-        
+
         $this->artisan('db:seed'); // Pour avoir les rôles si nécessaire, mais ici on va créer manuellement
     }
 
@@ -23,7 +23,7 @@ class RegistrationTest extends TestCase
     {
         $participant = User::factory()->create(['role' => 'participant']);
         $organizer = User::factory()->create(['role' => 'organisateur']);
-        
+
         $event = Event::create([
             'organizer_id' => $organizer->id,
             'title' => 'Concert de Test',
@@ -44,7 +44,7 @@ class RegistrationTest extends TestCase
             'user_id' => $participant->id,
             'status' => 'validé',
         ]);
-        
+
         $registration = Registration::first();
         $this->assertNotNull($registration->pass_code);
         $this->assertEquals(8, strlen($registration->pass_code));

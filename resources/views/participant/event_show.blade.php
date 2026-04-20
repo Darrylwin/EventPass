@@ -102,7 +102,12 @@
 
                         {{-- Jauge de places --}}
                         @php
-                            $spots = $event->availableSpots();
+                            // Préférer le compteur pré-calculé `validated_registrations_count` s'il est présent
+                            $validated = $event->validated_registrations_count ?? null;
+                            if ($validated === null) {
+                                $validated = $event->registrations()->where('status', 'validé')->count();
+                            }
+                            $spots = max(0, $event->capacity - $validated);
                             $fillPercent = $event->capacity > 0
                                 ? min(100, round(($event->capacity - $spots) / $event->capacity * 100))
                                 : 100;
@@ -170,11 +175,7 @@
 
                         @else
                             @auth
-                                @php
-                                    $userRegistration = auth()->user()->registrations->firstWhere('event_id', $event->id);
-                                @endphp
-
-                                @if($userRegistration)
+                                @if(isset($userRegistration) && $userRegistration)
                                     {{-- Déjà inscrit --}}
                                     <div
                                         class="bg-primary/10 border border-primary/20 rounded-xl px-4 py-4 text-center space-y-2">

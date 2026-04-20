@@ -1,17 +1,17 @@
 <?php
 
-use App\Http\Controllers\Organisateur\EventController;
-use App\Http\Controllers\Organisateur\RegistrationController;
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\Auth\LogoutController;
 use App\Http\Controllers\Auth\RegisterController;
+use App\Http\Controllers\Organisateur\EventController;
+use App\Http\Controllers\Organisateur\RegistrationController;
 use App\Http\Controllers\Participant\RegistrationController as ParticipantRegistrationController;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', [ParticipantRegistrationController::class, 'publicIndex'])->name('home');
 
-Route::get('/home', fn() => redirect()->route('dashboard'));
+Route::get('/home', fn () => redirect()->route('dashboard'));
 Route::get('/events', [ParticipantRegistrationController::class, 'publicIndex'])->name('events.index');
 Route::get('/events/{event}', [ParticipantRegistrationController::class, 'publicShow'])->name('events.show');
 
@@ -51,7 +51,6 @@ Route::middleware(['auth', 'role:organisateur'])
         Route::patch('/registrations/{registration}/reactivate', [RegistrationController::class, 'reactivate'])
             ->name('registrations.reactivate');
     });
-
 
 Route::middleware(['auth', 'role:participant'])
     ->prefix('participant')

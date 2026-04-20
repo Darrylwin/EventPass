@@ -18,16 +18,16 @@ class StatsOverview extends BaseWidget
         $totalParticipants = User::where('role', 'participant')->count();
 
         $fillRate = $totalEvents > 0
-            ? Event::withCount(['registrations' => fn($q) => $q->where('status', 'validé')])
+            ? Event::withCount(['registrations' => fn ($q) => $q->where('status', 'validé')])
                 ->get()
-                ->avg(fn($event) => $event->capacity > 0
+                ->avg(fn ($event) => $event->capacity > 0
                     ? ($event->registrations_count / $event->capacity) * 100
                     : 0)
             : 0;
 
         return [
             Stat::make('Événements publiés', $publishedEvents)
-                ->description($totalEvents . ' événements au total')
+                ->description($totalEvents.' événements au total')
                 ->color('success'),
 
             Stat::make('Inscriptions validées', $totalRegistrations)
@@ -36,7 +36,7 @@ class StatsOverview extends BaseWidget
             Stat::make('Participants inscrits', $totalParticipants)
                 ->color('info'),
 
-            Stat::make('Taux de remplissage moyen', round($fillRate, 1) . '%')
+            Stat::make('Taux de remplissage moyen', round($fillRate, 1).'%')
                 ->color('warning'),
         ];
     }

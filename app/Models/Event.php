@@ -65,7 +65,7 @@ class Event extends Model
     public function scopeFull(Builder $query): Builder
     {
         return $query->whereRaw(
-            "capacity <= (select count(*) from registrations where registrations.event_id = events.id and registrations.status = ?)",
+            'capacity <= (select count(*) from registrations where registrations.event_id = events.id and registrations.status = ?)',
             ['validé']
         );
     }
@@ -78,11 +78,12 @@ class Event extends Model
     public function availableSpots(): int
     {
         $taken = $this->registrations()->where('status', 'validé')->count();
+
         return max(0, $this->capacity - $taken);
     }
 
     public function isFree(): bool
     {
-        return (float)$this->price === 0.0;
+        return (float) $this->price === 0.0;
     }
 }
