@@ -8,6 +8,8 @@
     <link href="https://fonts.bunny.net/css?family=playfair-display:700|dm-sans:400,500,600" rel="stylesheet">
     <script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
     @vite(['resources/css/app.css', 'resources/js/app.js'])
+    <link rel="icon" href="{{ asset('favib.png') }}" type="image/png">
+    <link rel="apple-touch-icon" href="{{ asset('favib.png') }}">
 </head>
 <body class="min-h-screen bg-background text-foreground">
 
@@ -16,8 +18,8 @@
 
     {{-- Brand --}}
     <div class="flex items-center gap-8">
-        <a href="{{ route('home') }}" class="text-lg font-bold shrink-0">
-            Event<span class="text-primary">Pass</span>
+        <a href="{{ route('home') }}" class="flex items-center text-lg font-bold shrink-0 gap-2">
+            <img src="{{ asset('logo.png') }}" alt="{{ config('app.name', 'EventPass') }}" class="h-8 w-auto" />
         </a>
 
         {{-- Navigation contextuelle selon le rôle --}}
