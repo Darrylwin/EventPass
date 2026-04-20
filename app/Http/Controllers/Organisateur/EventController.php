@@ -8,6 +8,7 @@ use App\Models\Registration;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\Rule;
 use Illuminate\View\View;
@@ -16,6 +17,7 @@ class EventController extends Controller
 {
     public function dashboard(Request $request): View
     {
+        /** @var \App\Models\User $user */
         $user = $request->user();
 
         $stats = [
@@ -110,6 +112,14 @@ class EventController extends Controller
     {
         $this->authorizeOrganizerOwnership($event);
 
+        // Temporary debug log to trace unexpected delete/update flows
+        Log::info('Organisateur EventController::update called', [
+            'user_id' => $request->user()?->id,
+            'event_id' => $event->id,
+            'method' => $request->method(),
+            'payload' => $request->all(),
+        ]);
+
         $data = $this->validatedData($request);
 
         if ($request->boolean('remove_image') && $event->image_path) {
@@ -125,15 +135,29 @@ class EventController extends Controller
             $data['image_path'] = $request->file('image_path')->store('events', 'public');
         }
 
+
         $event->update($data);
+
+        Log::info('Organisateur EventController::update completed', [
+            'event_id' => $event->id,
+            'updated_data' => $data,
+        ]);
 
         return redirect()->route('organisateur.events.index')
             ->with('success', 'Événement mis à jour avec succès.');
     }
 
-    public function destroy(Event $event): RedirectResponse
+    public function destroy(Request $request, Event $event): RedirectResponse
     {
+
         $this->authorizeOrganizerOwnership($event);
+
+        // Log destroy attempts for debugging accidental deletions
+        Log::warning('Organisateur EventController::destroy called', [
+            'user_id' => $request->user()?->id,
+            'event_id' => $event->id,
+            'method' => $request->method(),
+        ]);
 
         if ($event->image_path) {
             Storage::disk('public')->delete($event->image_path);

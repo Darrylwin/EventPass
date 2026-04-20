@@ -19,7 +19,7 @@
 
 <div class="grid sm:grid-cols-2 gap-4">
     <div>
-        <label for="starts_date" class="block text-xs font-medium text-muted-foreground uppercase tracking-widest mb-2">Date
+        <label for="starts_at_picker" class="block text-xs font-medium text-muted-foreground uppercase tracking-widest mb-2">Date
             et heure</label>
 
         {{-- Sélecteur enrichi (Flatpickr) + champs fallback date/time --}}
@@ -32,25 +32,7 @@
             class="w-full mb-2 bg-input/30 border border-border rounded-lg px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
         >
 
-        <div class="flex gap-2">
-            <input
-                type="date"
-                name="starts_date"
-                id="starts_date"
-                value="{{ old('starts_date', $event->starts_at ? $event->starts_at->format('Y-m-d') : '') }}"
-                required
-                class="w-1/2 bg-input/30 border border-border rounded-lg px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
-            >
-
-            <input
-                type="time"
-                name="starts_time"
-                id="starts_time"
-                value="{{ old('starts_time', $event->starts_at ? $event->starts_at->format('H:i') : '') }}"
-                required
-                class="w-1/2 bg-input/30 border border-border rounded-lg px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
-            >
-        </div>
+        {{-- We removed the separate date + time fallback inputs to rely on the single picker input. --}}
 
         {{-- Valeur finale envoyée au serveur (synchronisée par JS) --}}
         <input type="hidden" name="starts_at" id="starts_at" value="{{ old('starts_at', $event->starts_at ? $event->starts_at->format('Y-m-d\\TH:i') : '') }}">
@@ -195,39 +177,64 @@
 
     <script>
     document.addEventListener('DOMContentLoaded', function () {
-        const dateEl = document.getElementById('starts_date');
-        const timeEl = document.getElementById('starts_time');
+
         const hiddenEl = document.getElementById('starts_at');
         const pickerEl = document.getElementById('starts_at_picker');
 
         function syncStartsAt() {
-            if (!dateEl || !hiddenEl) return;
-            const date = dateEl.value;
-            const time = timeEl ? timeEl.value : '';
+            if (!hiddenEl) return;
+            const value = hiddenEl.value || '';
 
-            if (!date) {
-                hiddenEl.value = '';
+            if (!value) {
+                if (pickerEl) pickerEl.value = '';
                 return;
             }
 
-            // Format attendu pour input datetime-local / validation côté serveur
-            hiddenEl.value = time ? `${date}T${time}` : date;
-
-            // Keep picker display in sync for clarity
+            // If flatpickr isn't available, show a readable fallback in the text input.
             if (pickerEl && typeof flatpickr === 'undefined') {
-                // If flatpickr not available, just set the text value
-                pickerEl.value = time ? `${date.split('-').reverse().join('/')} ${time}` : date.split('-').reverse().join('/');
+                // hidden value expected like 'YYYY-MM-DDTHH:MM' or 'YYYY-MM-DD'
+                if (value.includes('T')) {
+                    const [datePart, timePart] = value.split('T');
+                    const [y, m, d] = datePart.split('-');
+                    pickerEl.value = `${d}/${m}/${y} ${timePart}`;
+                } else if (value.includes('-')) {
+                    const [y, m, d] = value.split('-');
+                    pickerEl.value = `${d}/${m}/${y}`;
+                } else {
+                    pickerEl.value = value;
+                }
             }
         }
 
-        if (dateEl) dateEl.addEventListener('change', syncStartsAt);
-        if (timeEl) timeEl.addEventListener('change', syncStartsAt);
-
-        const form = dateEl ? dateEl.closest('form') : null;
-        if (form) form.addEventListener('submit', syncStartsAt);
-
         // Initial sync (pré-remplissage si edition)
         syncStartsAt();
+
+        // If flatpickr isn't available, parse the visible picker text on submit
+        const form = pickerEl ? pickerEl.closest('form') : null;
+        if (form) {
+            form.addEventListener('submit', function () {
+                if (typeof flatpickr !== 'undefined') return;
+                if (!pickerEl || !hiddenEl) return;
+
+                const val = pickerEl.value.trim();
+                if (!val) {
+                    hiddenEl.value = '';
+                    return;
+                }
+
+                // Try to parse DD/MM/YYYY HH:MM or DD/MM/YYYY
+                const re = /^(\d{2})\/(\d{2})\/(\d{4})(?:\s+(\d{2}:\d{2}))?$/;
+                const m = val.match(re);
+                if (m) {
+                    const [_all, d, mo, y, time] = m;
+                    if (time) {
+                        hiddenEl.value = `${y}-${mo}-${d}T${time}`;
+                    } else {
+                        hiddenEl.value = `${y}-${mo}-${d}`;
+                    }
+                }
+            });
+        }
 
         // Load Flatpickr if available and initialize
         function initFlatpickr() {
@@ -247,19 +254,8 @@
                 defaultDate: hiddenEl && hiddenEl.value ? hiddenEl.value : null,
                 onChange: function (selectedDates, dateStr) {
                     if (!hiddenEl) return;
+                    // dateStr is formatted per flatpickr.dateFormat (Y-m-d\TH:i)
                     hiddenEl.value = dateStr;
-
-                    if (selectedDates.length) {
-                        const dt = selectedDates[0];
-                        const y = dt.getFullYear();
-                        const m = String(dt.getMonth() + 1).padStart(2, '0');
-                        const d = String(dt.getDate()).padStart(2, '0');
-                        const hh = String(dt.getHours()).padStart(2, '0');
-                        const mm = String(dt.getMinutes()).padStart(2, '0');
-
-                        if (dateEl) dateEl.value = `${y}-${m}-${d}`;
-                        if (timeEl) timeEl.value = `${hh}:${mm}`;
-                    }
                 },
             });
         }

@@ -45,6 +45,7 @@ class RegistrationController extends Controller
         // Précharger l'éventuelle inscription de l'utilisateur connecté afin d'éviter le lazy-loading
         $userRegistration = null;
         if (Auth::check()) {
+            /** @var \App\Models\User $user */
             $user = Auth::user();
             $userRegistration = $user->registrations()->where('event_id', $event->id)->first();
         }
@@ -57,6 +58,7 @@ class RegistrationController extends Controller
      */
     public function index(): View
     {
+        /** @var \App\Models\User $user */
         $user = Auth::user();
 
         $registrations = $user->registrations()
@@ -76,6 +78,7 @@ class RegistrationController extends Controller
      */
     public function store(Event $event): RedirectResponse
     {
+        /** @var \App\Models\User $user */
         $user = Auth::user();
 
         // 1. Vérification de l'unicité (un participant = un pass par événement)

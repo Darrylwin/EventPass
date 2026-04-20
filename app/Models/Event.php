@@ -2,6 +2,19 @@
 
 namespace App\Models;
 
+/**
+ * @property int $id
+ * @property int $organizer_id
+ * @property string $title
+ * @property string|null $description
+ * @property \Illuminate\Support\Carbon $starts_at
+ * @property string $location
+ * @property int $capacity
+ * @property float $price
+ * @property string|null $image_path
+ * @property string $status
+ */
+
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -24,14 +37,11 @@ class Event extends Model
         'status',
     ];
 
-    protected function casts(): array
-    {
-        return [
-            'starts_at' => 'datetime',
-            'price' => 'decimal:2',
-            'capacity' => 'integer',
-        ];
-    }
+    protected $casts = [
+        'starts_at' => 'datetime',
+        'price' => 'decimal:2',
+        'capacity' => 'integer',
+    ];
 
     public function organizer(): BelongsTo
     {

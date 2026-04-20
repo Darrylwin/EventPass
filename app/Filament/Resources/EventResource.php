@@ -14,7 +14,7 @@ use Filament\Forms\Form;
 use Filament\Resources\Resource;
 use Filament\Tables\Actions\Action;
 use Filament\Tables\Actions\DeleteBulkAction;
-use Filament\Tables\Columns\BadgeColumn;
+use Illuminate\Support\Facades\Auth;
 use Filament\Tables\Columns\ImageColumn;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\SelectFilter;
@@ -43,8 +43,8 @@ class EventResource extends Resource
                 ->options(fn () => User::where('role', 'organisateur')->pluck('name', 'id'))
                 ->preload()
                 ->searchable()
-                ->default(fn () => auth()->id())
-                ->hidden(fn () => ! auth()->user() || ! auth()->user()->isAdmin()),
+                ->default(fn () => Auth::id())
+                ->hidden(fn () => (Auth::user()?->role ?? null) !== 'admin'),
 
             Textarea::make('description')
                 ->label('Description')
@@ -134,8 +134,9 @@ class EventResource extends Resource
                     ->label('Inscrits')
                     ->counts('registrations'),
 
-                BadgeColumn::make('status')
+                TextColumn::make('status')
                     ->label('Statut')
+                    ->badge()
                     ->colors([
                         'secondary' => 'brouillon',
                         'success' => 'publié',
